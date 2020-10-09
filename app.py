@@ -30,15 +30,13 @@ def talk(channel):
     slack_web_client.chat_postMessage(**directmessage)
 
 
-@slack_events_adapter.on("message")
+@slack_events_adapter.on("app_mention")
 def directtalk(payload):
     event = payload.get("event", {})
 
-    text = event.get("text")
+    channel_id = event.get("channel")
 
-    if "hi" in text.lower():
-        channel_id = event.get("channel")
-        return talk(channel_id)
+    return talk(channel_id)
 
 
 @slack_events_adapter.on("member_joined_channel")
