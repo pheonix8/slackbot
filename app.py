@@ -1,42 +1,59 @@
+import time
 import logging
 from flask import Flask
-from slack import WebClient
-from slackeventsapi import SlackEventAdapter
-from unleashedBot import Unleashed
 import slackbot_settings
+from slack import WebClient
+from unleashedBot import Unleashed
+from slackeventsapi import SlackEventAdapter
 
 app = Flask(__name__)
-slack_events_adapter = SlackEventAdapter(slackbot_settings.SLACK_SIGNING_SECRET, "/slack/events", app)
 
+slack_events_adapter = SlackEventAdapter(slackbot_settings.SLACK_SIGNING_SECRET, "/slack/events", app)
 slack_web_client = WebClient(slackbot_settings.SLACK_BOT_TOKEN)
 
-unleashed_sent = {}
 
-
-def show_unleashed(user_id: str, channel: str):
+def show_unleashed(channel):
     unleashedbot = Unleashed(channel)
 
     message = unleashedbot.get_message_payload()
 
-    response = slack_web_client.chat_postMessage(**message)
+    while True:
+        slack_web_client.chat_postMessage(**message)
+        time.sleep(100)
 
-    if channel not in unleashed_sent:
-        unleashed_sent[channel] = {}
-    unleashed_sent[channel][user_id] = unleashedbot
+
+def talk(channel):
+    unleashedbot = Unleashed(channel)
+
+    directmessage = unleashedbot.get_message_payload()
+
+    slack_web_client.chat_postMessage(**directmessage)
 
 
 @slack_events_adapter.on("message")
-def onboarding_message(payload):
+def directtalk(payload):
     event = payload.get("event", {})
 
-    channel_id = event.get("channel")
-    user_id = event.get("user")
+    text = event.get("text")
 
-    show_unleashed(user_id, channel_id)
+    if "hi" in text.lower():
+        channel_id = event.get("channel")
+        return talk(channel_id)
+
+
+@slack_events_adapter.on("member_joined_channel")
+def startUnleashed(payload):
+    event = payload.get("event", {})
+
+    test = event.get("user")
+
+    if test == "U01CNLCRAJV":
+        channel_id = event.get("channel")
+        return show_unleashed(channel_id)
 
 
 if __name__ == '__main__':
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
-    app.run(port=3000)
+    app.run(host='0.0.0.0', port=3000)
