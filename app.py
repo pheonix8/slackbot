@@ -4,12 +4,9 @@ import slackbot_settings
 from slack import WebClient
 from unleashedBot import Unleashed
 from flask import abort, Flask, request
-from slackeventsapi import SlackEventAdapter
 
 app = Flask(__name__)
 
-
-slack_events_adapter = SlackEventAdapter(slackbot_settings.SLACK_SIGNING_SECRET, "/slack/events", app)
 slack_web_client = WebClient(slackbot_settings.SLACK_BOT_TOKEN)
 
 
