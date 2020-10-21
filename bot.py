@@ -1,11 +1,12 @@
 import requests
+import slackbot_settings
 import requests.auth
 import binascii
 import hashlib
 import hmac
 
-api_key = "lQTYwG4Ac0LUu1ntnSTu0qKqULDXzfyZIDMwKUDasvB5H9gNul6a6pivN9w4pSCGCgfGmfKEUaxXwvUMQ=="
-api_id = "f168227e-a392-4296-9b80-6ec50ac7da7b"
+api_key = slackbot_settings.API_KEY
+api_id = slackbot_settings.API_ID
 
 
 class UnleashedAPI(requests.auth.AuthBase):
